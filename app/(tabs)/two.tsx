@@ -1,18 +1,16 @@
 import { StyleSheet } from 'react-native';
 
-import EditScreenInfo from '@/components/EditScreenInfo';
-import { Text, View } from '@/components/Themed';
+import { View } from '@/components/Themed';
+import { useUrlManager } from '@/features/urls/hooks/useUrlManager';
+import { ScannedUrlList } from '@/features/urls/manage/ScannedUrlList';
+import { TapGestureHandler } from 'react-native-gesture-handler';
 
 export default function TabTwoScreen() {
+  const { urls, removeUrl } = useUrlManager();
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Tab Two</Text>
-      <View
-        style={styles.separator}
-        lightColor="#eee"
-        darkColor="rgba(255,255,255,0.1)"
-      />
-      <EditScreenInfo path="app/(tabs)/two.tsx" />
+      <ScannedUrlList items={urls} />
     </View>
   );
 }
@@ -20,16 +18,9 @@ export default function TabTwoScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   title: {
     fontSize: 20,
     fontWeight: 'bold',
-  },
-  separator: {
-    marginVertical: 30,
-    height: 1,
-    width: '80%',
   },
 });

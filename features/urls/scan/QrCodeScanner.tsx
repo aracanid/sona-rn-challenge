@@ -3,9 +3,8 @@ import {
   CameraView,
   useCameraPermissions,
 } from 'expo-camera/next';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { useUrlManager } from '@/features/urls/hooks/useUrlManager';
 
 interface UrlScannerProps {
   onQrCodeScanned: (data: string) => void;
