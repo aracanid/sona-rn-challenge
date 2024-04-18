@@ -3,7 +3,7 @@ import { StyleSheet } from 'react-native';
 import { View } from '@/components/Themed';
 import { useUrlManager } from '@/features/urls/hooks/useUrlManager';
 import { ScannedUrlList } from '@/features/urls/manage/ScannedUrlList';
-import { TapGestureHandler } from 'react-native-gesture-handler';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 export default function TabTwoScreen() {
   const { urls, removeUrl } = useUrlManager();
@@ -22,5 +22,10 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: 'bold',
+  },
+  separator: {
+    marginVertical: 30,
+    height: 1,
+    width: '80%',
   },
 });
