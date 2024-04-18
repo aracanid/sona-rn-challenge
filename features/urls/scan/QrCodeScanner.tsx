@@ -5,6 +5,7 @@ import {
 } from 'expo-camera/next';
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import { useUrlManager } from '@/features/urls/hooks/useUrlManager';
 
 interface UrlScannerProps {
   onQrCodeScanned: (data: string) => void;
@@ -41,12 +42,13 @@ export function QrCodeScanner({ onQrCodeScanned }: UrlScannerProps) {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    width: '80%',
+    height: '100%',
   },
   camera: {
     borderRadius: 50,
     overflow: 'hidden',
-    width: '80%',
+    width: '100%',
     height: '50%',
     position: 'absolute',
   },

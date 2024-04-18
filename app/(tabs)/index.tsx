@@ -1,18 +1,49 @@
 import { StyleSheet } from 'react-native';
 
-import EditScreenInfo from '@/components/EditScreenInfo';
 import { Text, View } from '@/components/Themed';
+import { QrCodeScanner } from '@/features/urls/scan/QrCodeScanner';
+import { SavePopup } from '@/features/urls/scan/SavePopup';
+import { useState } from 'react';
+import ScannedUrl from '@/features/urls/types/ScannedUrl';
+import { useUrlManager } from '@/features/urls/hooks/useUrlManager';
 
 export default function TabOneScreen() {
+  const [scannedUrl, setScannedUrl] = useState<ScannedUrl | undefined>();
+  const { urls, saveUrl, removeUrl } = useUrlManager();
+
+  function handleQrCodeFound(data: string) {
+    const url = new URL(data);
+    setScannedUrl({
+      id: 1,
+      createdAt: new Date(),
+      name: url.hostname,
+      url: url.href,
+    });
+  }
+
+  function handleSaveUrl() {
+    if (scannedUrl) {
+      saveUrl(scannedUrl);
+      setScannedUrl(undefined);
+    }
+    console.log(JSON.stringify(urls));
+  }
+
+  function handleDiscardUrl() {
+    setScannedUrl(undefined);
+    console.log('discarded url');
+  }
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Tab One</Text>
-      <View
-        style={styles.separator}
-        lightColor="#eee"
-        darkColor="rgba(255,255,255,0.1)"
+      <Text>QR Hunter</Text>
+      <SavePopup
+        visible={!!scannedUrl}
+        scannedUrl={scannedUrl}
+        onSave={handleSaveUrl}
+        onDiscard={handleDiscardUrl}
       />
-      <EditScreenInfo path="app/(tabs)/index.tsx" />
+      <QrCodeScanner onQrCodeScanned={handleQrCodeFound} />
     </View>
   );
 }
@@ -20,8 +51,7 @@ export default function TabOneScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: 'blue',
   },
   title: {
     fontSize: 20,
