@@ -11,6 +11,7 @@ import Animated, {
   runOnJS,
   useAnimatedStyle,
   useSharedValue,
+  withSpring,
   withTiming,
 } from 'react-native-reanimated';
 import {
@@ -23,7 +24,7 @@ import { FontAwesome5 } from '@expo/vector-icons';
 
 interface ScannedUrlItemProps {
   item: ScannedUrl;
-  onDelete: () => void;
+  onDelete: (id: number) => void;
 }
 
 const LIST_ITEM_HEIGHT = 70;
@@ -35,12 +36,51 @@ export function ScannedUrlListItem({ item, onDelete }: ScannedUrlItemProps) {
     WebBrowser.openBrowserAsync(item.url);
   }
 
+  const pressed = useSharedValue(false);
   const translateX = useSharedValue(0);
   const itemHeight = useSharedValue(LIST_ITEM_HEIGHT);
   const marginVertical = useSharedValue(10);
   const opacity = useSharedValue(1);
 
-  const panGesture = Gesture.Pan()
+  const animatedBounce = useAnimatedStyle(() => ({
+    transform: [{ scale: withSpring(pressed.value ? 1.2 : 1) }],
+  }));
+
+  const animatedSlideTransformStyle = useAnimatedStyle(() => ({
+    transform: [
+      {
+        translateX: translateX.value,
+      },
+    ],
+  }));
+
+  const animatedOpacityStyle = useAnimatedStyle(() => {
+    const opacity = withTiming(
+      translateX.value < TRANSLATE_X_THRESHOLD ? 1 : 0,
+    );
+    return { opacity };
+  });
+
+  const animatedDismissStyle = useAnimatedStyle(() => {
+    return {
+      height: itemHeight.value,
+      marginVertical: marginVertical.value,
+      opacity: opacity.value,
+    };
+  });
+
+  const onTap = Gesture.Tap()
+    .onBegin(() => {
+      pressed.value = true;
+    })
+    .onFinalize(() => {
+      pressed.value = false;
+    })
+    .maxDistance(1)
+    .onTouchesUp(handleOnPress)
+    .runOnJS(true);
+
+  const onPan = Gesture.Pan()
     .onUpdate((event) => {
       translateX.value = event.translationX;
     })
@@ -52,83 +92,58 @@ export function ScannedUrlListItem({ item, onDelete }: ScannedUrlItemProps) {
         marginVertical.value = withTiming(0);
         opacity.value = withTiming(0, undefined, (isFinished) => {
           if (isFinished && onDelete) {
-            runOnJS(onDelete);
+            runOnJS(onDelete)(item.id);
           }
         });
       } else {
         translateX.value = withTiming(0);
       }
     })
-    .simultaneousWithExternalGesture();
-
-  const rStyle = useAnimatedStyle(() => ({
-    transform: [
-      {
-        translateX: translateX.value,
-      },
-    ],
-  }));
-
-  const rIconContainerStyle = useAnimatedStyle(() => {
-    const opacity = withTiming(
-      translateX.value < TRANSLATE_X_THRESHOLD ? 1 : 0,
-    );
-    return { opacity };
-  });
-
-  const rTaskContainerStyle = useAnimatedStyle(() => {
-    return {
-      height: itemHeight.value,
-      marginVertical: marginVertical.value,
-      opacity: opacity.value,
-    };
-  });
+    .blocksExternalGesture(onTap);
 
   return (
-    <Animated.View style={[styles.taskContainer, rTaskContainerStyle]}>
-      <Animated.View style={[styles.iconContainer, rIconContainerStyle]}>
+    <Animated.View style={[styles.container, animatedDismissStyle]}>
+      <Animated.View style={[styles.iconContainer, animatedOpacityStyle]}>
         <FontAwesome5
           name={'trash-alt'}
           size={LIST_ITEM_HEIGHT * 0.4}
           color={'red'}
         />
       </Animated.View>
-      <GestureHandlerRootView>
-        <GestureDetector gesture={panGesture}>
-          <Animated.View style={[styles.task, rStyle]}>
-            <TouchableOpacity style={styles.taskTitle} onPress={handleOnPress}>
-              <Text>{item.url}</Text>
-            </TouchableOpacity>
+      <GestureDetector gesture={onTap}>
+        <GestureDetector gesture={onPan}>
+          <Animated.View
+            style={[styles.url, animatedSlideTransformStyle, animatedBounce]}
+          >
+            <Text>{item.url}</Text>
           </Animated.View>
         </GestureDetector>
-      </GestureHandlerRootView>
+      </GestureDetector>
     </Animated.View>
   );
 }
 
 const styles = StyleSheet.create({
-  taskContainer: {
+  container: {
     width: '100%',
     alignItems: 'center',
   },
-  task: {
+  url: {
     width: '90%',
     height: LIST_ITEM_HEIGHT,
     justifyContent: 'center',
     paddingLeft: 20,
     backgroundColor: 'white',
     borderRadius: 10,
-    // Shadow for iOS
     shadowOpacity: 0.08,
     shadowOffset: {
       width: 0,
       height: 20,
     },
     shadowRadius: 10,
-    // Shadow for Android
     elevation: 5,
   },
-  taskTitle: {
+  urlText: {
     fontSize: 16,
   },
   iconContainer: {

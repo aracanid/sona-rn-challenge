@@ -36,14 +36,19 @@ export default function TabOneScreen() {
 
   return (
     <View style={styles.container}>
-      <Text>QR Hunter</Text>
       <SavePopup
-        visible={!!scannedUrl}
+        isVisible={!!scannedUrl}
         scannedUrl={scannedUrl}
         onSave={handleSaveUrl}
         onDiscard={handleDiscardUrl}
       />
+      <Text>QR Hunter</Text>
       <QrCodeScanner onQrCodeScanned={handleQrCodeFound} />
+      <View>
+        <Text>You've scanned</Text>
+        <Text>{urls.length}</Text>
+        <Text>urls so far!</Text>
+      </View>
     </View>
   );
 }

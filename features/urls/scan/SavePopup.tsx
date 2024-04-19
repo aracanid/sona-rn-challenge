@@ -1,28 +1,45 @@
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import React from 'react';
 import ScannedUrl from '@/features/urls/types/ScannedUrl';
+import Animated, {
+  Easing,
+  ReduceMotion,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
 
 interface SavePopupProps {
-  visible: boolean;
+  isVisible: boolean;
   onSave: () => void;
   onDiscard: () => void;
   scannedUrl: ScannedUrl | undefined;
 }
 
 export function SavePopup({
-  visible,
+  isVisible,
   onSave,
   onDiscard,
   scannedUrl,
 }: SavePopupProps) {
+  const opacity = useSharedValue(0);
+  console.log(`is visible ${isVisible}`);
+
+  const animatedOpen = useAnimatedStyle(() => ({
+    opacity: isVisible ? 1 : 0,
+    transform: [
+      {
+        scale: withTiming(isVisible ? 1.2 : 1, {
+          duration: 1000,
+          easing: Easing.bounce,
+          reduceMotion: ReduceMotion.System,
+        }),
+      },
+    ],
+  }));
+
   return (
-    <View
-      style={
-        visible
-          ? [styles.enabled, styles.container]
-          : [styles.disabled, styles.container]
-      }
-    >
+    <Animated.View style={[styles.container, animatedOpen]}>
       <View style={styles.innerContainer}>
         <Text style={styles.title}>Found a new URL!</Text>
         <Text style={styles.url}>{scannedUrl?.url}</Text>
@@ -36,7 +53,7 @@ export function SavePopup({
           </TouchableOpacity>
         </View>
       </View>
-    </View>
+    </Animated.View>
   );
 }
 
@@ -85,5 +102,6 @@ const styles = StyleSheet.create({
     width: '80%',
     height: '50%',
     zIndex: 100,
+    opacity: 0,
   },
 });

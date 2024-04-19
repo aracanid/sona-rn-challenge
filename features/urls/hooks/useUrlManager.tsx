@@ -19,6 +19,7 @@ export function useUrlManager() {
 
   function removeUrl(id: number) {
     removeUrlFromStore(id);
+    console.log('url removed');
   }
 
   return {
