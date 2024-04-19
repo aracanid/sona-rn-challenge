@@ -5,7 +5,7 @@ import { useUrlManager } from '@/features/urls/hooks/useUrlManager';
 import { ScannedUrlList } from '@/features/urls/manage/ScannedUrlList';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
-export default function TabTwoScreen() {
+export default function ManageUrlScreen() {
   const { urls, removeUrl } = useUrlManager();
 
   return (

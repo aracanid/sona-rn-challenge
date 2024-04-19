@@ -8,6 +8,7 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
+import { useColours } from '@/hooks/useColours';
 
 interface SavePopupProps {
   isVisible: boolean;
@@ -22,8 +23,7 @@ export function SavePopup({
   onDiscard,
   scannedUrl,
 }: SavePopupProps) {
-  const opacity = useSharedValue(0);
-  console.log(`is visible ${isVisible}`);
+  const colours = useColours();
 
   const animatedOpen = useAnimatedStyle(() => ({
     opacity: isVisible ? 1 : 0,
@@ -39,17 +39,37 @@ export function SavePopup({
   }));
 
   return (
-    <Animated.View style={[styles.container, animatedOpen]}>
+    <Animated.View
+      style={[
+        styles.container,
+        animatedOpen,
+        { backgroundColor: colours.foreground },
+      ]}
+    >
       <View style={styles.innerContainer}>
-        <Text style={styles.title}>Found a new URL!</Text>
-        <Text style={styles.url}>{scannedUrl?.url}</Text>
+        <Text style={[styles.title, { color: colours.text }]}>
+          Found a new URL!
+        </Text>
+        <Text style={[styles.url, { color: colours.highlight1 }]}>
+          {scannedUrl?.url}
+        </Text>
 
         <View style={styles.buttonContainer}>
-          <TouchableOpacity style={styles.button} onPress={onDiscard}>
-            <Text>Discard</Text>
+          <TouchableOpacity
+            style={[styles.button, { borderColor: colours.highlight2 }]}
+            onPress={onDiscard}
+          >
+            <Text style={[styles.buttonText, { color: colours.highlight2 }]}>
+              Discard
+            </Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={onSave}>
-            <Text>Save</Text>
+          <TouchableOpacity
+            style={[styles.button, { borderColor: colours.highlight1 }]}
+            onPress={onSave}
+          >
+            <Text style={[styles.buttonText, { color: colours.highlight1 }]}>
+              Save
+            </Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -59,32 +79,38 @@ export function SavePopup({
 
 const styles = StyleSheet.create({
   title: {
-    flex: 1,
+    flex: 0.5,
     fontSize: 30,
     fontWeight: 'bold',
   },
-  url: {
-    flex: 1,
+  buttonText: {
+    flex: 0.5,
     fontSize: 20,
+    fontWeight: 'bold',
+  },
+  url: {
+    flex: 0.5,
+    fontSize: 20,
+    fontWeight: 'bold',
   },
   innerContainer: {
     padding: 25,
-    justifyContent: 'space-around',
     alignItems: 'center',
   },
   button: {
-    borderStyle: 'solid',
+    borderRadius: 50,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
     flex: 1,
+    marginHorizontal: 5,
+    padding: 5,
   },
   buttonContainer: {
-    flex: 0.5,
-    paddingHorizontal: 2,
-    justifyContent: 'space-between',
+    height: 50,
     flexDirection: 'row',
     width: '100%',
+    justifyContent: 'space-evenly',
   },
   enabled: {
     opacity: 100,
@@ -93,6 +119,7 @@ const styles = StyleSheet.create({
     opacity: 0,
   },
   container: {
+    marginTop: '35%',
     borderRadius: 50,
     flex: 1,
     backgroundColor: 'red',
@@ -100,8 +127,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     width: '80%',
-    height: '50%',
+    height: '40%',
     zIndex: 100,
     opacity: 0,
+    shadowOpacity: 0.5,
+    shadowOffset: {
+      width: 0,
+      height: 20,
+    },
+    shadowRadius: 10,
+    elevation: 5,
   },
 });

@@ -41,14 +41,13 @@ export function QrCodeScanner({ onQrCodeScanned }: UrlScannerProps) {
 
 const styles = StyleSheet.create({
   container: {
-    width: '80%',
+    width: '90%',
     height: '100%',
   },
   camera: {
     borderRadius: 50,
     overflow: 'hidden',
     width: '100%',
-    height: '50%',
-    position: 'absolute',
+    height: '70%',
   },
 });

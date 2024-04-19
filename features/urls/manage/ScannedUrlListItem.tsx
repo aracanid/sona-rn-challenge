@@ -1,11 +1,5 @@
 import ScannedUrl from '@/features/urls/types/ScannedUrl';
-import {
-  Dimensions,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { Dimensions, StyleSheet, Text } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
 import Animated, {
   runOnJS,
@@ -17,24 +11,31 @@ import Animated, {
 import {
   Gesture,
   GestureDetector,
-  GestureHandlerRootView,
+  GestureType,
   PanGestureHandlerProps,
 } from 'react-native-gesture-handler';
 import { FontAwesome5 } from '@expo/vector-icons';
+import { useColours } from '@/hooks/useColours';
+import { Ref } from 'react';
+import { GestureRef } from 'react-native-gesture-handler/lib/typescript/handlers/gestures/gesture';
 
-interface ScannedUrlItemProps {
+interface ScannedUrlItemProps
+  extends Pick<PanGestureHandlerProps, 'simultaneousHandlers'> {
   item: ScannedUrl;
   onDelete: (id: number) => void;
+  scrollRef: Ref<null>;
 }
 
 const LIST_ITEM_HEIGHT = 70;
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const TRANSLATE_X_THRESHOLD = -SCREEN_WIDTH * 0.3;
 
-export function ScannedUrlListItem({ item, onDelete }: ScannedUrlItemProps) {
-  function handleOnPress() {
-    WebBrowser.openBrowserAsync(item.url);
-  }
+export function ScannedUrlListItem({
+  item,
+  onDelete,
+  scrollRef,
+}: ScannedUrlItemProps) {
+  const colours = useColours();
 
   const pressed = useSharedValue(false);
   const translateX = useSharedValue(0);
@@ -69,15 +70,16 @@ export function ScannedUrlListItem({ item, onDelete }: ScannedUrlItemProps) {
     };
   });
 
-  const onTap = Gesture.Tap()
-    .onBegin(() => {
+  const onTap = Gesture.LongPress()
+    .onStart(() => {
       pressed.value = true;
     })
-    .onFinalize(() => {
+    .onEnd(() => {
       pressed.value = false;
+      handleOnPress();
     })
     .maxDistance(1)
-    .onTouchesUp(handleOnPress)
+    .minDuration(200)
     .runOnJS(true);
 
   const onPan = Gesture.Pan()
@@ -99,7 +101,12 @@ export function ScannedUrlListItem({ item, onDelete }: ScannedUrlItemProps) {
         translateX.value = withTiming(0);
       }
     })
-    .blocksExternalGesture(onTap);
+    .blocksExternalGesture(onTap)
+    .failOffsetY([-10000, 10000]);
+
+  function handleOnPress() {
+    WebBrowser.openBrowserAsync(item.url);
+  }
 
   return (
     <Animated.View style={[styles.container, animatedDismissStyle]}>
@@ -107,15 +114,25 @@ export function ScannedUrlListItem({ item, onDelete }: ScannedUrlItemProps) {
         <FontAwesome5
           name={'trash-alt'}
           size={LIST_ITEM_HEIGHT * 0.4}
-          color={'red'}
+          color={colours.highlight2}
         />
       </Animated.View>
       <GestureDetector gesture={onTap}>
         <GestureDetector gesture={onPan}>
           <Animated.View
-            style={[styles.url, animatedSlideTransformStyle, animatedBounce]}
+            style={[
+              styles.url,
+              { backgroundColor: colours.foreground },
+              animatedSlideTransformStyle,
+              animatedBounce,
+            ]}
           >
-            <Text>{item.url}</Text>
+            <Text
+              numberOfLines={1}
+              style={[styles.urlText, { color: colours.highlight1 }]}
+            >
+              {item.name}
+            </Text>
           </Animated.View>
         </GestureDetector>
       </GestureDetector>
@@ -129,13 +146,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   url: {
+    padding: 10,
     width: '90%',
     height: LIST_ITEM_HEIGHT,
     justifyContent: 'center',
-    paddingLeft: 20,
-    backgroundColor: 'white',
+    alignItems: 'center',
     borderRadius: 10,
-    shadowOpacity: 0.08,
+    shadowOpacity: 0.2,
     shadowOffset: {
       width: 0,
       height: 20,
@@ -144,7 +161,8 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   urlText: {
-    fontSize: 16,
+    fontSize: 30,
+    fontWeight: 'bold',
   },
   iconContainer: {
     height: LIST_ITEM_HEIGHT,
